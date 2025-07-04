@@ -1,4 +1,5 @@
 ```markdown
+
 # uAgent A2A Adapter
 
 A powerful adapter for integrating A2A (Agent-to-Agent) frameworks with uAgents, enabling seamless communication between different AI agent ecosystems.
@@ -10,7 +11,8 @@ A powerful adapter for integrating A2A (Agent-to-Agent) frameworks with uAgents,
 - 💬 **Chat Protocol**: Built-in support for agent-to-agent communication.
 - 🔄 **Bidirectional Communication**: Supports full-duplex communication between agents.
 - 🛡️ **Error Handling**: Robust error handling with fallback mechanisms.
-- 📦 **Multiple Frameworks**: Compatible with various AI frameworks (LangChain, CrewAI, MCP).
+```
+
 
 ## Installation
 
