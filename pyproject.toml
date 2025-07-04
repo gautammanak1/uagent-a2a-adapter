@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "uagent-a2a-adapter"
-version = "0.1.0"
+version = "0.1.2"
 authors = [
     {name = "gautammanak", email = "gautam.kumar@fetch.ai"},
 ]
@@ -26,7 +26,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-keywords = ["uagents", "a2a" ,a2a-sdk", "ai", "agents", "adapter", "integration"]
+keywords = ["uagents", "a2a-sdk", "ai", "agents", "adapter", "integration"]
 
 dependencies = [
     "uagents",

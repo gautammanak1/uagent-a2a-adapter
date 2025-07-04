@@ -1,3 +1,60 @@
+Metadata-Version: 2.4
+Name: uagent-a2a-adapter
+Version: 0.1.2
+Summary: Adapters for integrating A2A agents with uAgents framework
+Author-email: gautammanak <gautam.kumar@fetch.ai>
+License: Apache-2.0
+Project-URL: Homepage, https://github.com/gautammanak1/uagent-a2a-adapter
+Project-URL: Repository, https://github.com/gautammanak1/uagent-a2a-adapter
+Project-URL: Documentation, https://github.com/gautammanak1/uagent-a2a-adapter#readme
+Project-URL: Bug Tracker, https://github.com/gautammanak1/uagent-a2a-adapter/issues
+Keywords: uagents,a2a-sdk,ai,agents,adapter,integration
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: uagents
+Requires-Dist: httpx>=0.24.0
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: uvicorn>=0.23.0
+Provides-Extra: a2a-sdk
+Requires-Dist: a2a-sdk; extra == "a2a-sdk"
+Requires-Dist: agno>=0.1.0; extra == "a2a-sdk"
+Provides-Extra: langchain
+Requires-Dist: langchain>=0.1.0; extra == "langchain"
+Requires-Dist: langchain-openai>=0.1.0; extra == "langchain"
+Provides-Extra: crewai
+Requires-Dist: crewai>=0.1.0; extra == "crewai"
+Provides-Extra: mcp
+Requires-Dist: mcp>=0.1.0; extra == "mcp"
+Provides-Extra: all
+Requires-Dist: a2a-sdk; extra == "all"
+Requires-Dist: agno>=0.1.0; extra == "all"
+Requires-Dist: langchain>=0.1.0; extra == "all"
+Requires-Dist: langchain-openai>=0.1.0; extra == "all"
+Requires-Dist: crewai>=0.1.0; extra == "all"
+Requires-Dist: mcp>=0.1.0; extra == "all"
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: isort>=5.12.0; extra == "dev"
+Requires-Dist: flake8>=6.0.0; extra == "dev"
+Requires-Dist: mypy>=1.0.0; extra == "dev"
+Requires-Dist: twine>=4.0.0; extra == "dev"
+Requires-Dist: build>=0.10.0; extra == "dev"
+
 ## uAgent A2A Adapter
 
 A powerful adapter for integrating A2A (Agent-to-Agent) frameworks with uAgents, enabling seamless communication between different AI agent ecosystems.
