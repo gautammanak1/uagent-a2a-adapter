@@ -1,129 +1,309 @@
-## uAgent A2A Adapter
+### A2A uAgent Adapter
 
-A powerful adapter for integrating A2A (Agent-to-Agent) frameworks with uAgents, enabling seamless communication between different AI agent ecosystems.
+A comprehensive Python module for integrating A2A (Agent-to-Agent) systems with uAgents, enabling intelligent multi-agent coordination and communication.
+
+## Overview
+
+The A2A uAgent Adapter provides a seamless bridge between A2A agents and the uAgent ecosystem, allowing for:
+
+- **Multi-Agent Coordination**: Manage multiple specialized AI agents from a single interface
+- **Intelligent Routing**: Automatically route queries to the most suitable agent based on keywords, specialties, or LLM-based analysis
+- **Health Monitoring**: Continuous health checking and discovery of available agents
+- **Fallback Mechanisms**: Robust error handling with fallback executors
+- **Chat Protocol Integration**: Full support for uAgent chat protocols and messaging
+
 
 ## Features
 
-- 🔗 **Seamless Integration**: Connects A2A agents with the uAgents framework.
-- 🚀 **Easy Setup**: Simple configuration and deployment process.
-- 💬 **Chat Protocol**: Built-in support for agent-to-agent communication.
-- 🔄 **Bidirectional Communication**: Supports full-duplex communication between agents.
-- 🛡️ **Error Handling**: Robust error handling with fallback mechanisms.
+### Multi-Agent Management
 
+- Configure and manage multiple A2A agents with different specialties
+- Automatic agent discovery and registration
+- Health monitoring and status tracking
+
+
+### Intelligent Routing
+
+- **Keyword Matching**: Route queries based on agent keywords and specialties
+- **LLM-Based Routing**: Use AI to intelligently select the best agent for complex queries
+- **Round-Robin**: Distribute load evenly across available agents
+- **Priority-Based**: Assign priorities to agents for preferential routing
+
+
+### Communication Protocols
+
+- Full uAgent chat protocol support
+- Asynchronous message handling
+- Acknowledgment and error handling
+- Real-time agent communication
+
+
+### ️ Reliability Features
+
+- Health checking and agent discovery
+- Fallback executor support
+- Graceful error handling
+- Timeout management
 
 
 ## Installation
 
-### Basic Installation
-
-```bash
-pip install uagent-a2a-adapter
-```
-
-
-### With A2A Support
-
-```bash
-pip install uagent-a2a-adapter[a2a]
-```
-
-### With All Optional Dependencies
-
-```bash
-pip install uagent-a2a-adapter[all]
+```shellscript
+pip install uagent_a2a_adapter
 ```
 
 ## Quick Start
 
-Here's a simple example to get started:
+### Single Agent Setup
 
 ```python
-from dotenv import load_dotenv
-from your_agent_executor import YourAgentExecutor  # Replace with your executor
 from uagent_a2a_adapter import A2AAdapter
-
-# Load environment variables
-load_dotenv()
+from your_agent_executor import YourAgentExecutor  # Replace with your executor
 
 def main():
     # Initialize your agent executor
     executor = YourAgentExecutor()
-    
-    # Create the adapter
-    adapter = A2AAdapter(
-        agent_executor=executor,
-        name="my_a2a_agent",
-        description="My A2A agent with uAgents integration",
-        port=8082,
-        a2a_port=9997,
-        mailbox=True,
-        seed="my_agent_seed"
-    )
-    
-    print("🚀 Starting A2A Agent...")
-    adapter.run()
 
-if __name__ == "__main__":
-    main()
+# Create and run the adapter
+adapter = A2AAdapter(
+    agent_executor=agent_executor,
+    name="MyAgent",
+    description="A helpful AI assistant",
+    port=8000,
+    a2a_port=9999
+)
+
+adapter.run()
+```
+
+### Multi-Agent Setup
+
+```python
+from a2a_adapter import A2AAdapter, A2AAgentConfig
+
+# Configure multiple agents
+agent_configs = [
+    A2AAgentConfig(
+        name="CodeAgent",
+        description="Specialized in coding tasks",
+        url="http://localhost:9001",
+        port=9001,
+        specialties=["Python", "JavaScript", "Code Review"],
+        priority=2
+    ),
+    A2AAgentConfig(
+        name="DataAgent", 
+        description="Expert in data analysis",
+        url="http://localhost:9002",
+        port=9002,
+        specialties=["Data Analysis", "Statistics", "Visualization"]
+    )
+]
+
+# Create multi-agent adapter
+adapter = A2AAdapter(
+    name="MultiAgentSystem",
+    description="Coordinated AI agent system",
+    port=8000,
+    agent_configs=agent_configs,
+    routing_strategy="keyword_match"
+)
+
+adapter.run()
 ```
 
 ## Configuration
 
-### A2AAdapter Parameters
+### A2AAgentConfig
 
-- `agent_executor`: Your A2A agent executor instance.
-- `name`: Name of your agent.
-- `description`: Description of your agent's capabilities.
-- `port`: Port for the uAgent (default: 8000).
-- `a2a_port`: Port for the A2A server (default: 9999).
-- `mailbox`: Enable mailbox functionality (default: True).
-- `seed`: Seed for agent address generation (optional).
+Configure individual agents with specialized capabilities:
+
+```python
+config = A2AAgentConfig(
+    name="SpecializedAgent",
+    description="Agent description",
+    url="http://localhost:9000",
+    port=9000,
+    specialties=["Machine Learning", "Data Science"],
+    skills=["python", "tensorflow", "pandas"],  # Auto-generated if not provided
+    examples=["Help with ML models", "Analyze data"],  # Auto-generated if not provided
+    keywords=["ml", "ai", "data"],  # Auto-generated if not provided
+    priority=1  # Higher numbers = higher priority
+)
+```
+
+### Routing Strategies
+
+#### Keyword Matching (Default)
+
+Routes queries based on keyword and specialty matching with scoring:
+
+```python
+adapter = A2AAdapter(
+    routing_strategy="keyword_match",
+    # ... other config
+)
+```
+
+#### LLM-Based Routing
+
+Uses AI to intelligently select the best agent:
+
+```python
+adapter = A2AAdapter(
+    routing_strategy="llm_routing",
+    # ... other config
+)
+```
+
+#### Round Robin
+
+Distributes queries evenly across all healthy agents:
+
+```python
+adapter = A2AAdapter(
+    routing_strategy="round_robin",
+    # ... other config
+)
+```
+
+## API Reference
+
+### A2AAdapter
+
+Main adapter class for managing A2A agents.
+
+#### Constructor Parameters
+
+| Parameter | Type | Default | Description
+|-----|-----|-----|-----
+| `name` | str | Required | Name of the adapter
+| `description` | str | Required | Description of the adapter
+| `port` | int | 8000 | uAgent port
+| `mailbox` | bool | True | Enable mailbox functionality
+| `seed` | str | None | Seed for uAgent (auto-generated if None)
+| `agent_configs` | List[A2AAgentConfig] | [] | List of agent configurations
+| `fallback_executor` | AgentExecutor | None | Fallback executor for unrouted queries
+| `routing_strategy` | str | "keyword_match" | Routing strategy to use
+
+
+#### Methods
+
+##### `add_agent_config(config: A2AAgentConfig)`
+
+Add a new agent configuration to the adapter.
+
+##### `run()`
+
+Start the adapter and begin processing messages.
+
+### A2AAgentConfig
+
+Configuration class for individual A2A agents.
+
+#### Constructor Parameters
+
+| Parameter | Type | Default | Description
+|-----|-----|-----|-----
+| `name` | str | Required | Agent name
+| `description` | str | Required | Agent description
+| `url` | str | Required | Agent URL
+| `port` | int | Required | Agent port
+| `specialties` | List[str] | Required | Agent specialties
+| `skills` | List[str] | Auto-generated | Agent skills
+| `examples` | List[str] | Auto-generated | Usage examples
+| `keywords` | List[str] | Auto-generated | Routing keywords
+| `priority` | int | 1 | Agent priority (higher = more preferred)
+
+
+## Architecture
+
+```plaintext
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   uAgent Chat   │    │   A2A Adapter    │    │   A2A Agents    │
+│   Protocol      │◄──►│                  │◄──►│                 │
+└─────────────────┘    │  ┌─────────────┐ │    │  ┌─────────────┐│
+                       │  │   Router    │ │    │  │ Code Agent  ││
+┌─────────────────┐    │  │             │ │    │  └─────────────┘│
+│  External       │◄──►│  │ • Keywords  │ │    │  ┌─────────────┐│
+│  uAgents        │    │  │ • LLM       │ │    │  │ Data Agent  ││
+└─────────────────┘    │  │ • Priority  │ │    │  └─────────────┘│
+                       │  └─────────────┘ │    │  ┌─────────────┐│
+┌─────────────────┐    │  ┌─────────────┐ │    │  │ Chat Agent  ││
+│  Health         │◄──►│  │ Discovery   │ │    │  └─────────────┘│
+│  Monitor        │    │  │ & Health    │ │    └─────────────────┘
+└─────────────────┘    │  └─────────────┘ │
+                       └──────────────────┘
+```
+
+## Message Flow
+
+1. **Incoming Message**: External uAgent sends chat message
+2. **Agent Discovery**: Adapter discovers and health-checks available agents
+3. **Query Routing**: Router selects best agent based on strategy
+4. **Message Forwarding**: Query sent to selected A2A agent
+5. **Response Processing**: Agent response processed and formatted
+6. **Reply**: Response sent back to original sender
+7. **Acknowledgment**: Confirmation sent to complete the cycle
+
 
 ## Advanced Usage
 
-### Using the Register Tool
+### Custom Fallback Executor
 
 ```python
-from uagent_a2a_adapter import A2ARegisterTool
+class CustomFallbackExecutor(AgentExecutor):
+    async def execute(self, context, event_queue):
+        # Custom fallback logic
+        pass
 
-tool = A2ARegisterTool()
-result = tool.invoke({
-    "agent_executor": your_executor,
-    "name": "advanced_agent",
-    "description": "An advanced A2A agent",
-    "port": 8083,
-    "a2a_port": 9998,
-    "return_dict": True
-})
-
-print(f"Agent created: {result}")
+adapter = A2AAdapter(
+    name="SystemWithFallback",
+    fallback_executor=CustomFallbackExecutor(),
+    # ... other config
+)
 ```
 
+### Dynamic Agent Registration
 
-## Supported Frameworks
+```python
+# Start with basic configuration
+adapter = A2AAdapter(name="DynamicSystem")
 
-The adapter supports integration with various AI frameworks through optional dependencies:
+# Add agents dynamically
+new_agent = A2AAgentConfig(
+    name="NewAgent",
+    url="http://localhost:9003",
+    port=9003,
+    specialties=["Natural Language Processing"]
+)
 
-- **A2A**: Core A2A (Agent2Agent Protocol (A2A)) framework support.
+adapter.add_agent_config(new_agent)
+```
 
+### Health Monitoring
 
-## Communication Protocol
+The adapter automatically monitors agent health and excludes unhealthy agents from routing:
 
-The adapter uses the uAgents chat protocol for communication:
-
-1. **Message Reception**: Receives messages via uAgents chat protocol.
-2. **A2A Processing**: Forwards messages to A2A agent for processing.
-3. **Response Handling**: Returns processed responses through uAgents.
-4. **Acknowledgments**: Automatically handles message acknowledgments.
+```python
+# Health status is checked on startup and periodically
+# Unhealthy agents are automatically excluded from routing
+# Health checks include:
+# - Agent card availability at /.well-known/agent.json
+# - HTTP response status
+# - Response time monitoring
+```
 
 ## Error Handling
 
-The adapter includes robust error handling:
+The adapter includes comprehensive error handling:
 
-- **Connection Failures**: Automatically falls back to direct executor calls.
-- **Timeout Handling**: Configurable timeouts for HTTP requests.
-- **Error Messages**: Detailed error messages for debugging.
-- **Graceful Degradation**: Continues operation during partial failures.
+- **Agent Unavailable**: Automatically routes to alternative agents
+- **Network Timeouts**: Configurable timeout settings with graceful degradation
+- **Invalid Responses**: Fallback to error messages or alternative agents
+- **Health Check Failures**: Automatic agent exclusion and retry logic
+
+
 
 ## Development
 
@@ -161,15 +341,16 @@ pytest --cov=uagent_a2a_adapter
 pytest tests/test_adapter.py
 ```
 
+
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-1. Fork the repository.
-2. Create a feature branch.
-3. Make your changes.
-4. Add tests.
-5. Submit a pull request.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
 ## License
 
@@ -182,12 +363,22 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and changes.
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/gautammanak1/uagent-a2a-adapter/issues)
-<!-- - **Discussions**: [GitHub Discussions](https://github.com/gautammanak1/uagent-a2a-adapter/discussions) -->
+- **Discussions**: [GitHub Discussions](https://github.com/gautammanak1/uagent-a2a-adapter/discussions)
 - **Email**: gautam.kumar@fetch.ai
 
 ## Acknowledgments
 
-- [uAgents](https://github.com/fetchai/uAgents) - The underlying agent framework.
-- [A2A](https://github.com/a2aproject/a2a-python) - Agent-to-Agent communication protocol.
-- [Fetch.ai](https://fetch.ai) - For foundational agent technologies.
-```
+- [uAgents](https://github.com/fetchai/uAgents) - The underlying agent framework
+- [A2A](https://github.com/a2a-ai/a2a) - Agent-to-Agent communication protocol
+- [Fetch.ai](https://fetch.ai) - For the foundational agent technologies
+
+
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+
+---
+
+**Note**: This adapter requires a running A2A infrastructure and properly configured A2A agents to function correctly.
