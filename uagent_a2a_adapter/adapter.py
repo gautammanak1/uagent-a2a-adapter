@@ -1,4 +1,3 @@
-import asyncio
 import httpx
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional, List
@@ -15,7 +14,6 @@ from uagents_core.contrib.protocols.chat import (
     chat_protocol_spec
 )
 import requests
-import json
 from a2a.server.agent_execution import AgentExecutor
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
@@ -37,26 +35,17 @@ class A2AAgentConfig:
     
     def __post_init__(self):
         """Auto-generate missing fields if not provided."""
-        # Auto-generate skills from specialties if not provided
         if self.skills is None:
             self.skills = [specialty.replace(" ", "_").lower() for specialty in self.specialties]
-        
-        # Auto-generate examples if not provided
         if self.examples is None:
             self.examples = [f"Help with {specialty.lower()}" for specialty in self.specialties[:3]]
-        
-        # Auto-generate keywords from specialties if not provided
         if self.keywords is None:
             self.keywords = self._generate_keywords_from_specialties()
     
     def _generate_keywords_from_specialties(self) -> List[str]:
         """Generate keywords dynamically from specialties."""
         keywords = []
-        
-        # Add the specialties themselves
         keywords.extend([specialty.lower() for specialty in self.specialties])
-        
-        # Break down multi-word specialties into individual words
         for specialty in self.specialties:
             words = specialty.lower().replace("-", " ").replace("_", " ").split()
             keywords.extend(words)
@@ -202,10 +191,8 @@ class A2AAdapter:
 
                         if response.status_code == 200:
                             result = response.json()
-                            # Extract the response content from A2A format
                             if "result" in result:
                                 result_data = result["result"]
-                                # Handle artifacts format (streaming responses)
                                 if "artifacts" in result_data:
                                     artifacts = result_data["artifacts"]
                                     full_text = ""
@@ -216,21 +203,17 @@ class A2AAdapter:
                                                     full_text += part.get("text", "")
                                     if full_text.strip():
                                         return full_text.strip()
-                                # Handle standard parts format
                                 elif "parts" in result_data and len(result_data["parts"]) > 0:
                                     response_text = result_data["parts"][0].get("text", "")
                                     if response_text:
                                         return response_text.strip()
-                                # Fallback: return what we got
                                 return f"✅ Response received from A2A agent"
                         elif response.status_code == 404:
-                            continue  # Try next endpoint
+                            continue  
                         else:
                             return f"❌ A2A agent returned HTTP {response.status_code} at {endpoint}"
                     except Exception as e:
-                        continue  # Try next endpoint
-
-                # If all endpoints failed, try direct executor call
+                        continue  
                 return await self._call_executor_directly(message)
 
             except Exception as e:
@@ -243,7 +226,6 @@ class A2AAdapter:
             from a2a.server.agent_execution import RequestContext
             from a2a.server.events import EventQueue
 
-            # Create a mock request context
             agent_message = AgentMessage(
                 role="user",
                 parts=[Part(root=TextPart(type="text", text=message))],
@@ -255,14 +237,11 @@ class A2AAdapter:
                 context_id=uuid4().hex,
                 task_id=uuid4().hex
             )
-
-            # Create event queue to capture responses
             event_queue = EventQueue()
 
             # Execute the agent
             await self.agent_executor.execute(context, event_queue)
 
-            # Get the response from the event queue
             events = []
             while not event_queue.empty():
                 event = await event_queue.dequeue_event()
@@ -270,7 +249,6 @@ class A2AAdapter:
                     events.append(event)
 
             if events:
-                # Get the last event which should be the response
                 last_event = events[-1]
                 if hasattr(last_event, 'parts') and last_event.parts:
                     return last_event.parts[0].text
@@ -327,8 +305,6 @@ class A2AAdapter:
 
         self.server_thread = threading.Thread(target=run_server, daemon=True)
         self.server_thread.start()
-
-        # Wait a bit for server to start
         import time
         time.sleep(2)
 
@@ -345,7 +321,7 @@ class A2AAdapter:
         self.uagent.run()
 
 class A2AAdapter:
-    """Enhanced A2A Adapter supporting multiple agents with intelligent routing."""
+    """Enhanced A2A Adapter supporting agents with intelligent routing."""
     
     def __init__(self,
                  name: str,
@@ -447,7 +423,7 @@ class A2AAdapter:
 
         @self.uagent.on_event("startup")
         async def on_start(ctx: Context):
-            ctx.logger.info(f"🚀 A2A Multi-Agent uAgent started at address: {self.uagent.address}")
+            ctx.logger.info(f"🚀 A2A uAgent started at address: {self.uagent.address}")
             ctx.logger.info(f"🔗 Managing {len(self.agent_configs)} configured agents")
             
             # Discover and health check all agents on startup
@@ -464,13 +440,11 @@ class A2AAdapter:
         async with httpx.AsyncClient(timeout=10.0) as client:
             for config in self.agent_configs:
                 try:
-                    # Try to get agent card
                     card_url = f"{config.url}/.well-known/agent.json"
                     response = await client.get(card_url)
                     
                     if response.status_code == 200:
                         agent_card = response.json()
-                        # Merge config with discovered info
                         agent_info = {
                             "name": config.name,
                             "url": config.url,
@@ -534,13 +508,9 @@ class A2AAdapter:
         best_score = 0
 
         ctx.logger.info(f"🔍 Routing query: '{query}' among {len(agents)} agents")
-
-        # First, try LLM-based routing
         llm_selected_agent = await self._llm_route_query(query, agents, ctx)
         if llm_selected_agent:
             return llm_selected_agent
-
-        # Fallback to keyword-based routing if LLM fails
         ctx.logger.info("🔄 LLM routing failed, falling back to keyword matching")
 
         for agent in agents:
@@ -834,108 +804,7 @@ Response format: Just return the number (e.g., "2")"""
         # Print agent summary
         for config in self.agent_configs:
             print(f"   • {config.name}: {', '.join(config.specialties)}")
-
-        # Run uAgent (this will block)
         self.uagent.run()
 
-class A2ARegisterTool:
-    """Tool to register A2A agents as uAgents."""
+
     
-    def invoke(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        """Register an A2A agent as a uAgent."""
-        # Extract parameters
-        agent_executor = params["agent_executor"]
-        name = params["name"]
-        description = params.get("description", f"A2A Agent: {name}")
-        port = params.get("port", 8000)
-        a2a_port = params.get("a2a_port", 9999)
-        mailbox = params.get("mailbox", True)
-        seed = params.get("seed")
-        api_token = params.get("api_token")
-        return_dict = params.get("return_dict", False)
-        agent_ports = params.get("agent_ports", None)
-
-        # Create adapter
-        adapter = A2AAdapter(
-            agent_executor=agent_executor,
-            name=name,
-            description=description,
-            port=port,
-            a2a_port=a2a_port,
-            mailbox=mailbox,
-            seed=seed,
-            agent_ports=agent_ports
-        )
-
-        result = {
-            "agent_name": name,
-            "agent_address": adapter.uagent.address,
-            "agent_port": port,
-            "a2a_port": a2a_port,
-            "description": description,
-            "mailbox_enabled": mailbox
-        }
-
-        if return_dict:
-            return result
-        else:
-            return f"Created A2A uAgent '{name}' with address {adapter.uagent.address}"
-
-class A2AMultiAgentRegisterTool:
-    """Tool to register multiple A2A agents as a single coordinated uAgent."""
-    
-    def invoke(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        """Register multiple A2A agents as a coordinated uAgent system."""
-        # Extract parameters
-        name = params["name"]
-        description = params.get("description", f"Multi-Agent A2A System: {name}")
-        port = params.get("port", 8000)
-        mailbox = params.get("mailbox", True)
-        seed = params.get("seed")
-        agent_configs = params.get("agent_configs", [])
-        fallback_executor = params.get("fallback_executor")
-        routing_strategy = params.get("routing_strategy", "keyword_match")
-        return_dict = params.get("return_dict", False)
-
-        # Convert dict configs to A2AAgentConfig objects if needed
-        if agent_configs and isinstance(agent_configs[0], dict):
-            agent_configs = [
-                A2AAgentConfig(**config) if isinstance(config, dict) else config
-                for config in agent_configs
-            ]
-
-        # Create adapter
-        adapter = A2AAdapter(
-            name=name,
-            description=description,
-            port=port,
-            mailbox=mailbox,
-            seed=seed,
-            agent_configs=agent_configs,
-            fallback_executor=fallback_executor,
-            routing_strategy=routing_strategy
-        )
-
-        result = {
-            "adapter_name": name,
-            "adapter_address": adapter.uagent.address,
-            "adapter_port": port,
-            "description": description,
-            "total_agents": len(agent_configs),
-            "routing_strategy": routing_strategy,
-            "mailbox_enabled": mailbox,
-            "agent_configs": [
-                {
-                    "name": config.name,
-                    "url": config.url,
-                    "specialties": config.specialties,
-                    "keywords": config.keywords
-                }
-                for config in agent_configs
-            ]
-        }
-
-        if return_dict:
-            return result
-        else:
-            return f"Created A2A Multi-Agent uAgent '{name}' with {len(agent_configs)} agents"
