@@ -1,0 +1,3 @@
+[submodule "uagent-a2a-adapter-examples"]
+	path = uagent-a2a-adapter-examples
+	url = https://github.com/gautammanak1/uagent-a2a-adapter-examples
