@@ -1,4 +1,4 @@
-### A2A uAgent Adapter
+# A2A uAgent Adapter
 
 A comprehensive Python module for integrating A2A (Agent-to-Agent) systems with uAgents, enabling intelligent multi-agent coordination and communication.
 
@@ -6,21 +6,22 @@ A comprehensive Python module for integrating A2A (Agent-to-Agent) systems with 
 
 The A2A uAgent Adapter provides a seamless bridge between A2A agents and the uAgent ecosystem, allowing for:
 
-- **Multi-Agent Coordination**: Manage multiple specialized AI agents from a single interface
+- **Agent Coordination**: Manage multiple and single specialized a2a agents from a single interface
 - **Intelligent Routing**: Automatically route queries to the most suitable agent based on keywords, specialties, or LLM-based analysis
 - **Health Monitoring**: Continuous health checking and discovery of available agents
 - **Fallback Mechanisms**: Robust error handling with fallback executors
 - **Chat Protocol Integration**: Full support for uAgent chat protocols and messaging
 
-
 ## Features
 
-### Multi-Agent Management
+### Agent Management
 
 - Configure and manage multiple A2A agents with different specialties
 - Automatic agent discovery and registration
-- Health monitoring and status tracking
-
+- Health monitoring and status trackingKey 
+- Registers Agent Cards for multiple A2A servers and runs them alongside the uAgent in a single terminal using different ports.
+- Supports communication with both single and multiple A2A servers.
+- Dynamically determines the appropriate A2A server based on the user query, sends the request via HTTP, and returns the response back to ASI:One.
 
 ### Intelligent Routing
 
@@ -29,7 +30,6 @@ The A2A uAgent Adapter provides a seamless bridge between A2A agents and the uAg
 - **Round-Robin**: Distribute load evenly across available agents
 - **Priority-Based**: Assign priorities to agents for preferential routing
 
-
 ### Communication Protocols
 
 - Full uAgent chat protocol support
@@ -37,18 +37,16 @@ The A2A uAgent Adapter provides a seamless bridge between A2A agents and the uAg
 - Acknowledgment and error handling
 - Real-time agent communication
 
-
-### ️ Reliability Features
+### Reliability Features
 
 - Health checking and agent discovery
 - Fallback executor support
 - Graceful error handling
 - Timeout management
 
-
 ## Installation
 
-```shellscript
+```shell
 pip install uagent_a2a_adapter
 ```
 
@@ -64,22 +62,21 @@ def main():
     # Initialize your agent executor
     executor = YourAgentExecutor()
 
-# Create and run the adapter
-adapter = A2AAdapter(
-    agent_executor=agent_executor,
-    name="MyAgent",
-    description="A helpful AI assistant",
-    port=8000,
-    a2a_port=9999
-)
-
-adapter.run()
+    # Create and run the adapter
+    adapter = A2AAdapter(
+        agent_executor=executor,
+        name="MyAgent",
+        description="A helpful AI assistant",
+        port=8000,
+        a2a_port=9999
+    )
+    adapter.run()
 ```
 
 ### Multi-Agent Setup
 
 ```python
-from a2a_adapter import A2AAdapter, A2AAgentConfig
+from uagent_a2a_adapter import A2AAdapter, A2AAgentConfig
 
 # Configure multiple agents
 agent_configs = [
@@ -92,7 +89,7 @@ agent_configs = [
         priority=2
     ),
     A2AAgentConfig(
-        name="DataAgent", 
+        name="DataAgent",
         description="Expert in data analysis",
         url="http://localhost:9002",
         port=9002,
@@ -108,7 +105,6 @@ adapter = A2AAdapter(
     agent_configs=agent_configs,
     routing_strategy="keyword_match"
 )
-
 adapter.run()
 ```
 
@@ -175,17 +171,16 @@ Main adapter class for managing A2A agents.
 
 #### Constructor Parameters
 
-| Parameter | Type | Default | Description
-|-----|-----|-----|-----
-| `name` | str | Required | Name of the adapter
-| `description` | str | Required | Description of the adapter
-| `port` | int | 8000 | uAgent port
-| `mailbox` | bool | True | Enable mailbox functionality
-| `seed` | str | None | Seed for uAgent (auto-generated if None)
-| `agent_configs` | List[A2AAgentConfig] | [] | List of agent configurations
-| `fallback_executor` | AgentExecutor | None | Fallback executor for unrouted queries
-| `routing_strategy` | str | "keyword_match" | Routing strategy to use
-
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `name` | str | Required | Name of the adapter |
+| `description` | str | Required | Description of the adapter |
+| `port` | int | 8000 | uAgent port |
+| `mailbox` | bool | True | Enable mailbox functionality |
+| `seed` | str | None | Seed for uAgent (auto-generated if None) |
+| `agent_configs` | List[A2AAgentConfig] | [] | List of agent configurations |
+| `fallback_executor` | AgentExecutor | None | Fallback executor for unrouted queries |
+| `routing_strategy` | str | "keyword_match" | Routing strategy to use |
 
 #### Methods
 
@@ -203,38 +198,54 @@ Configuration class for individual A2A agents.
 
 #### Constructor Parameters
 
-| Parameter | Type | Default | Description
-|-----|-----|-----|-----
-| `name` | str | Required | Agent name
-| `description` | str | Required | Agent description
-| `url` | str | Required | Agent URL
-| `port` | int | Required | Agent port
-| `specialties` | List[str] | Required | Agent specialties
-| `skills` | List[str] | Auto-generated | Agent skills
-| `examples` | List[str] | Auto-generated | Usage examples
-| `keywords` | List[str] | Auto-generated | Routing keywords
-| `priority` | int | 1 | Agent priority (higher = more preferred)
-
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `name` | str | Required | Agent name |
+| `description` | str | Required | Agent description |
+| `url` | str | Required | Agent URL |
+| `port` | int | Required | Agent port |
+| `specialties` | List[str] | Required | Agent specialties |
+| `skills` | List[str] | Auto-generated | Agent skills |
+| `examples` | List[str] | Auto-generated | Usage examples |
+| `keywords` | List[str] | Auto-generated | Routing keywords |
+| `priority` | int | 1 | Agent priority (higher = more preferred) |
 
 ## Architecture
 
-```plaintext
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   uAgent Chat   │    │   A2A Adapter    │    │   A2A Agents    │
-│   Protocol      │◄──►│                  │◄──►│                 │
-└─────────────────┘    │  ┌─────────────┐ │    │  ┌─────────────┐│
-                       │  │   Router    │ │    │  │ Code Agent  ││
-┌─────────────────┐    │  │             │ │    │  └─────────────┘│
-│  External       │◄──►│  │ • Keywords  │ │    │  ┌─────────────┐│
-│  uAgents        │    │  │ • LLM       │ │    │  │ Data Agent  ││
-└─────────────────┘    │  │ • Priority  │ │    │  └─────────────┘│
-                       │  └─────────────┘ │    │  ┌─────────────┐│
-┌─────────────────┐    │  ┌─────────────┐ │    │  │ Chat Agent  ││
-│  Health         │◄──►│  │ Discovery   │ │    │  └─────────────┘│
-│  Monitor        │    │  │ & Health    │ │    └─────────────────┘
-└─────────────────┘    │  └─────────────┘ │
-                       └──────────────────┘
+```mermaid
+flowchart LR
+    UA[uAgent Chat<br>Protocol]
+    AD[A2A Adapter]
+    AG[A2A Agents]
+    EUA[External<br>uAgents]
+    HM[Health<br>Monitor]
+
+    UA <--> AD
+    AD <--> AG
+    EUA <--> AD
+    HM <--> AD
+
+    subgraph Adapter_Router_Discovery [ ]
+        direction TB
+        RT[Router<br>• Keywords<br>• LLM<br>• Priority]
+        DC[Discovery<br>& Health]
+    end
+
+    subgraph A2A_Agents [ ]
+        direction TB
+        Code[Code Agent]
+        Data[Data Agent]
+        Chat[Chat Agent]
+    end
+
+    AD --> RT
+    AD --> DC
+
+    AG --> Code
+    AG --> Data
+    AG --> Chat
 ```
+
 
 ## Message Flow
 
@@ -246,6 +257,183 @@ Configuration class for individual A2A agents.
 6. **Reply**: Response sent back to original sender
 7. **Acknowledgment**: Confirmation sent to complete the cycle
 
+## Examples
+
+### Single Agent Example
+
+```python
+import asyncio
+from uagent_a2a_adapter import A2AAdapter
+from brave.agent import BraveSearchAgentExecutor
+
+def main():
+    executor = BraveSearchAgentExecutor()
+    adapter = A2AAdapter(
+        agent_executor=executor,
+        name="brave_search",
+        description="AI Search Agent powered by Brave Search API",
+        port=8200,
+        a2a_port=10020
+    )
+    adapter.run()
+
+if __name__ == "__main__":
+    main()
+```
+
+### Multi-Agent Example
+
+```python
+import asyncio
+import threading
+import time
+from typing import Dict, List
+from dataclasses import dataclass
+from uagent_a2a_adapter import A2AAdapter, A2AAgentConfig
+from agents.research_agent import ResearchAgentExecutor
+from agents.coding_agent import CodingAgentExecutor
+from agents.analysis_agent import AnalysisAgentExecutor
+
+@dataclass
+class AIAgentConfig:
+    name: str
+    description: str
+    port: int
+    a2a_port: int
+    specialties: List[str]
+    executor_class: str
+
+class MultiAgentOrchestrator:
+    def __init__(self):
+        self.coordinator = None
+        self.agent_configs: List[AIAgentConfig] = []
+        self.executors: Dict[str, any] = {}
+        self.running = False
+
+    def setup_agents(self):
+        self.agent_configs = [
+            AIAgentConfig(
+                name="research_specialist",
+                description="AI Research Specialist for research and analysis",
+                port=8100,
+                a2a_port=10020,
+                specialties=["research", "analysis", "fact-finding", "summarization"],
+                executor_class="ResearchAgentExecutor"
+            ),
+            AIAgentConfig(
+                name="coding_specialist",
+                description="AI Software Engineer for coding",
+                port=8102,
+                a2a_port=10022,
+                specialties=["coding", "debugging", "programming"],
+                executor_class="CodingAgentExecutor"
+            ),
+            AIAgentConfig(
+                name="analysis_specialist",
+                description="AI Data Analyst for insights and metrics",
+                port=8103,
+                a2a_port=10023,
+                specialties=["data analysis", "insights", "forecasting"],
+                executor_class="AnalysisAgentExecutor"
+            )
+        ]
+        self.executors = {
+            "ResearchAgentExecutor": ResearchAgentExecutor(),
+            "CodingAgentExecutor": CodingAgentExecutor(),
+            "AnalysisAgentExecutor": AnalysisAgentExecutor()
+        }
+
+    def start_individual_a2a_servers(self):
+        from a2a.server.apps import A2AStarletteApplication
+        from a2a.server.request_handlers import DefaultRequestHandler
+        from a2a.server.tasks import InMemoryTaskStore
+        from a2a.types import AgentCapabilities, AgentCard, AgentSkill
+        import uvicorn
+
+        def start_server(config: AIAgentConfig, executor):
+            try:
+                skill = AgentSkill(
+                    id=f"{config.name}_skill",
+                    name=config.name.title(),
+                    description=config.description,
+                    tags=config.specialties
+                )
+                agent_card = AgentCard(
+                    name=config.name.title(),
+                    description=config.description,
+                    url=f"http://localhost:{config.a2a_port}/",
+                    version="1.0.0",
+                    defaultInputModes=["text"],
+                    defaultOutputModes=["text"],
+                    capabilities=AgentCapabilities(),
+                    skills=[skill]
+                )
+                server = A2AStarletteApplication(
+                    agent_card=agent_card,
+                    http_handler=DefaultRequestHandler(
+                        agent_executor=executor,
+                        task_store=InMemoryTaskStore()
+                    )
+                )
+                uvicorn.run(server.build(), host="0.0.0.0", port=config.a2a_port, log_level="info")
+            except Exception as e:
+                pass
+
+        for config in self.agent_configs:
+            thread = threading.Thread(
+                target=start_server,
+                args=(config, self.executors[config.executor_class]),
+                daemon=True
+            )
+            thread.start()
+            time.sleep(1)
+        time.sleep(5)
+
+    def create_coordinator(self):
+        a2a_configs = [
+            A2AAgentConfig(
+                name=config.name,
+                description=config.description,
+                url=f"http://localhost:{config.a2a_port}",
+                port=config.a2a_port,
+                specialties=config.specialties,
+                priority=3 if "research" in config.specialties or "coding" in config.specialties else 2
+            ) for config in self.agent_configs
+        ]
+        self.coordinator = A2AAdapter(
+            name="coordinator",
+            description="Routes queries to AI specialists",
+            port=8200,
+            mailbox=True,
+            agent_configs=a2a_configs,
+            routing_strategy="keyword_match"
+        )
+        return self.coordinator
+
+    def start_system(self):
+        try:
+            self.setup_agents()
+            self.start_individual_a2a_servers()
+            coordinator = self.create_coordinator()
+            self.running = True
+            coordinator.run()
+        except KeyboardInterrupt:
+            self.running = False
+        except Exception:
+            self.running = False
+
+def main():
+    try:
+        system = MultiAgentOrchestrator()
+        system.start_system()
+    except KeyboardInterrupt:
+        pass
+    except Exception:
+        pass
+
+if __name__ == "__main__":
+    main()
+```
 
 ## Advanced Usage
 
@@ -277,7 +465,6 @@ new_agent = A2AAgentConfig(
     port=9003,
     specialties=["Natural Language Processing"]
 )
-
 adapter.add_agent_config(new_agent)
 ```
 
@@ -285,14 +472,12 @@ adapter.add_agent_config(new_agent)
 
 The adapter automatically monitors agent health and excludes unhealthy agents from routing:
 
-```python
-# Health status is checked on startup and periodically
-# Unhealthy agents are automatically excluded from routing
-# Health checks include:
-# - Agent card availability at /.well-known/agent.json
-# - HTTP response status
-# - Response time monitoring
-```
+- Health status is checked on startup and periodically
+- Unhealthy agents are automatically excluded from routing
+- Health checks include:
+  - Agent card availability at /.well-known/agent.json
+  - HTTP response status
+  - Response time monitoring
 
 ## Error Handling
 
@@ -305,53 +490,6 @@ The adapter includes comprehensive error handling:
 
 
 
-## Development
-
-### Setting up Development Environment
-
-```bash
-# Clone the repository
-git clone https://github.com/gautammanak1/uagent-a2a-adapter.git
-cd uagent-a2a-adapter
-
-# Install development dependencies
-pip install -e .[dev]
-
-# Run tests
-pytest
-
-# Format code
-black .
-isort .
-
-# Type checking
-mypy uagent_a2a_adapter
-```
-
-### Running Tests
-
-```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=uagent_a2a_adapter
-
-# Run specific test file
-pytest tests/test_adapter.py
-```
-
-
-## Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
@@ -362,9 +500,9 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and changes.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/gautammanak1/uagent-a2a-adapter/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/gautammanak1/uagent-a2a-adapter/discussions)
-- **Email**: gautam.kumar@fetch.ai
+- **Issues**: [GitHub Issues]()
+- **Discussions**: [GitHub Discussions]()
+
 
 ## Acknowledgments
 
@@ -372,13 +510,6 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and changes.
 - [A2A](https://github.com/a2a-ai/a2a) - Agent-to-Agent communication protocol
 - [Fetch.ai](https://fetch.ai) - For the foundational agent technologies
 
+## Note
 
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-
----
-
-**Note**: This adapter requires a running A2A infrastructure and properly configured A2A agents to function correctly.
+This adapter requires a running A2A infrastructure and properly configured A2A agents to function correctly.
